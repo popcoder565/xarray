@@ -2013,6 +2013,21 @@ class TestVariable(VariableSubclassobjects):
         ):
             v.quantile(q, dim="x")
 
+    @pytest.mark.filterwarnings("error:All-NaN slice encountered:RuntimeWarning")
+    @pytest.mark.parametrize("compute_backend", ["numbagg", None], indirect=True)
+    @pytest.mark.parametrize("method", ["linear", "median_unbiased"])
+    def test_quantile_all_nan_slice(self, method, compute_backend):
+        # GH9870
+        d = self.d.copy()
+        d[:, 0] = np.nan
+        v = Variable(["x", "y"], d)
+
+        actual = v.quantile([0.25, 0.75], dim="x", method=method)
+
+        expected = np.full((2, 3), np.nan)
+        expected[:, 1:] = np.quantile(d[:, 1:], [0.25, 0.75], axis=0, method=method)
+        np.testing.assert_allclose(actual.values, expected)
+
     @requires_dask
     @requires_bottleneck
     def test_rank_dask(self):

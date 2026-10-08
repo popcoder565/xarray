@@ -105,6 +105,12 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- :py:meth:`DataArray.quantile`, :py:meth:`Dataset.quantile` and
+  :py:meth:`Variable.quantile` no longer warn with ``All-NaN slice encountered``
+  when a slice is all ``NaN``. Like the other reductions they return ``NaN``
+  silently, instead of warning depending on ``method`` and on whether numbagg
+  is installed (:issue:`9870`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation

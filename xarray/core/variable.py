@@ -2130,8 +2130,12 @@ class Variable(
         xp = duck_array_ops.get_array_namespace(self.data)
 
         def _wrapper(npa, **kwargs):
+            # all-NaN slices give NaN without a warning, like the other reductions
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", r"All-NaN slice encountered")
+                result = _quantile_func(npa, **kwargs)
             # move quantile axis to end. required for apply_ufunc
-            return xp.moveaxis(_quantile_func(npa, **kwargs), 0, -1)
+            return xp.moveaxis(result, 0, -1)
 
         # jax requires hashable
         axis = tuple(range(-1, -1 * len(dim) - 1, -1))
