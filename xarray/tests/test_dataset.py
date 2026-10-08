@@ -7965,6 +7965,15 @@ class TestDataset:
 # pytest tests — new tests should go here, rather than in the class.
 
 
+def test_query_coords_only() -> None:
+    # GH6449
+    ds = Dataset(coords={"a": ("x", [0, 1, 2]), "b": ("x", [3, 4, 5])})
+
+    actual = ds.query(x="(a > 0) & (b < 5)")
+
+    assert_identical(actual, ds.isel(x=[1]))
+
+
 @pytest.mark.parametrize("test_elements", ([1, 2], np.array([1, 2]), DataArray([1, 2])))
 def test_isin(test_elements, use_dask: bool) -> None:
     expected = Dataset(

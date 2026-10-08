@@ -105,6 +105,9 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- Fix :py:meth:`Dataset.query` raising ``UndefinedVariableError`` for datasets
+  without data variables, e.g. if all variables are coordinates (:issue:`6449`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation
