@@ -1982,6 +1982,27 @@ class TestDataArray:
         )
 
     @pytest.mark.parametrize(
+        "data, fill_value",
+        [
+            (np.array([1.0], dtype="float32"), np.nan),
+            (np.array([1.0]), 0),
+            (np.array([1]), 0),
+            (np.array([1]), np.nan),
+            (np.array(["a"]), np.nan),
+        ],
+    )
+    def test_reindex_empty_array_like_non_empty(self, data, fill_value) -> None:
+        # GH8274: writeable and with the same dtype as for a non-empty array
+        non_empty = xr.DataArray(data, dims="x", coords={"x": [0.0]})
+        expected = non_empty.reindex(x=[1.0, 2.0], fill_value=fill_value)
+
+        actual = non_empty[:0].reindex(x=[1.0, 2.0], fill_value=fill_value)
+
+        assert_identical(actual, expected)
+        assert actual.dtype == expected.dtype
+        assert actual.values.flags.writeable
+
+    @pytest.mark.parametrize(
         "extension_array",
         [
             pytest.param(pd.Categorical(["a", "b", "c"]), id="categorical"),
@@ -3408,6 +3429,16 @@ class TestDataArray:
         b = DataArray(np.random.random((30,)).astype(np.float32), [("x", x2)])
         c, _d = align(a, b, join="outer")
         assert c.dtype == np.float32
+
+    def test_align_empty_inplace(self) -> None:
+        # GH8274
+        empty = DataArray(np.array([]), coords={"x": []})
+        other = DataArray(np.array([1.0]), coords={"x": ["a"]})
+
+        actual, _ = align(empty, other, join="outer", fill_value=0)
+        actual += other
+
+        assert_identical(actual, other)
 
     def test_align_copy(self) -> None:
         x = DataArray([1, 2, 3], coords=[("a", [1, 2, 3])])

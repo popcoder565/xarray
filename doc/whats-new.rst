@@ -105,6 +105,13 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- Reindexing an empty array, e.g. with :py:meth:`DataArray.reindex` or with
+  :py:func:`align` and ``join="outer"``, now returns a writeable array with the
+  same dtype as for a non-empty array, so that in-place operations on the
+  result work. Previously the result was read-only and had the dtype of
+  ``fill_value``, e.g. ``int64`` for a ``float64`` array reindexed with
+  ``fill_value=0`` (:issue:`8274`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation

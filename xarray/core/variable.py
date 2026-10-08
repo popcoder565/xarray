@@ -962,6 +962,14 @@ class Variable(
             # build the mask directly instead.
             mask = indexing.create_mask(indexer, self.shape)
             data = duck_array_ops.broadcast_to(fill_value, getattr(mask, "shape", ()))
+            # copy the read-only view returned by broadcast_to, casting to the
+            # dtype that indexing a non-empty array would give
+            dtype = (
+                dtypes.result_type(self.dtype, fill_value)
+                if isinstance(self.dtype, np.dtype)
+                else data.dtype
+            )
+            data = duck_array_ops.astype(data, dtype)
 
         if new_order:
             data = duck_array_ops.moveaxis(data, range(len(new_order)), new_order)
