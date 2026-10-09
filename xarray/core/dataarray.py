@@ -650,12 +650,19 @@ class DataArray(
         elif set(self.dims) == set(variable.dims):
             # Shape has changed (e.g. from reduce(..., keepdims=True)
             new_sizes = dict(variable.sizes)
+            # coordinates of an index can have dimensions the array doesn't have,
+            # but only as long as they keep that index
             coords = {
                 k: v
                 for k, v in self._coords.items()
-                if v.shape == tuple(new_sizes[d] for d in v.dims)
+                if all(new_sizes.get(d, size) == size for d, size in v.sizes.items())
             }
             indexes = filter_indexes_from_coords(self._indexes, set(coords))
+            coords = {
+                k: v
+                for k, v in coords.items()
+                if k in indexes or set(v.dims) <= set(new_sizes)
+            }
         else:
             allowed_dims = set(variable.dims)
             coords = {}

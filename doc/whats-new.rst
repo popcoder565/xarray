@@ -123,6 +123,10 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- Fix a ``KeyError`` in :py:class:`DataArray` reductions with ``keepdims=True``
+  if a custom index adds coordinates along dimensions the array doesn't have
+  (:issue:`11215`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation

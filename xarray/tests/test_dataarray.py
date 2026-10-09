@@ -660,6 +660,34 @@ class TestDataArray:
                 assert name in da.coords
                 assert isinstance(da.xindexes[name], MultiDimIndex)
 
+    def test_reduce_keepdims_multi_coord_index(self) -> None:
+        # GH11215
+        class MultiDimIndex(Index):
+            def should_add_coord_to_array(self, name, var, dims):
+                return True
+
+        idx = MultiDimIndex()
+        coords = Coordinates(
+            coords={
+                "node_x": ("nodes", [0.0, 1.0, 2.0]),
+                "face_x": ("faces", [0.5, 1.5]),
+            },
+            indexes=dict.fromkeys(["node_x", "face_x"], idx),
+        )
+        da = DataArray(np.random.rand(3, 4), dims=("nodes", "extra"), coords=coords)
+
+        actual = da.mean("extra", keepdims=True)
+        assert set(actual.coords) == {"node_x", "face_x"}
+        assert isinstance(actual.xindexes["face_x"], MultiDimIndex)
+
+        # reducing one of the index's dimensions drops the index, and with it the
+        # coordinates along dimensions the array doesn't have
+        actual = da.mean("nodes", keepdims=True)
+        expected = DataArray(
+            da.values.mean(axis=0, keepdims=True), dims=("nodes", "extra")
+        )
+        assert_identical(actual, expected)
+
     def test_equals_and_identical(self) -> None:
         orig = DataArray(np.arange(5.0), {"a": 42}, dims="x")
 
