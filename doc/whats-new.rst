@@ -105,6 +105,11 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- :py:meth:`DataArray.drop_sel`, :py:meth:`DataArray.drop_isel` and the
+  :py:class:`Dataset` equivalents no longer raise ``InvalidIndexError`` along a
+  dimension whose index has duplicate values. ``drop_sel`` drops every
+  occurrence of the given labels (:issue:`6605`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation

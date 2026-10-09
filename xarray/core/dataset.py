@@ -6228,7 +6228,12 @@ class Dataset(
                     f"dimension {dim!r} does not have coordinate labels"
                 ) from err
             new_index = index.drop(labels_for_dim, errors=errors)
-            ds = ds.loc[{dim: new_index}]
+            if index.is_unique:
+                ds = ds.loc[{dim: new_index}]
+            else:
+                # .loc requires a unique index. index.drop removes every occurrence
+                # of a label, so the positions to keep are those still in new_index.
+                ds = ds.isel({dim: index.isin(new_index)})
         return ds
 
     def drop_isel(self, indexers=None, **indexers_kwargs) -> Self:
@@ -6290,10 +6295,11 @@ class Dataset(
             if utils.is_scalar(pos_for_dim):
                 pos_for_dim = [pos_for_dim]
             pos_for_dim = np.asarray(pos_for_dim)
-            index = self.get_index(dim)
-            new_index = index.delete(pos_for_dim)
-            dimension_index[dim] = new_index
-        ds = ds.loc[dimension_index]
+            if pos_for_dim.size == 0:
+                # np.asarray([]) has a float dtype, which np.delete rejects
+                pos_for_dim = pos_for_dim.astype(int)
+            dimension_index[dim] = np.delete(np.arange(self.sizes[dim]), pos_for_dim)
+        ds = ds.isel(dimension_index)
         return ds
 
     def drop_dims(

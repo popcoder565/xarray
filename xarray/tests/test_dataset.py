@@ -3157,6 +3157,36 @@ class TestDataset:
         with pytest.raises(KeyError):
             data.drop_isel(z=1)
 
+    @pytest.mark.parametrize(
+        "use_cftime", [False, pytest.param(True, marks=requires_cftime)]
+    )
+    def test_drop_non_unique_index(self, use_cftime: bool) -> None:
+        # GH6605
+        time = xr.date_range("2000-01-01", periods=5, use_cftime=use_cftime)
+        data = Dataset(
+            {"A": ("time", np.arange(5))}, coords={"time": time[[0, 1, 1, 2, 3]]}
+        )
+
+        actual = data.drop_isel(time=1)
+        expected = data.isel(time=[0, 2, 3, 4])
+        assert_identical(expected, actual)
+
+        # all occurrences of a label are dropped
+        actual = data.drop_sel(time=time[1])
+        expected = data.isel(time=[0, 3, 4])
+        assert_identical(expected, actual)
+
+        actual = data.drop_sel(time=time[[0, 3]])
+        expected = data.isel(time=[1, 2, 3])
+        assert_identical(expected, actual)
+
+        with pytest.raises(KeyError, match=r"not found in axis"):
+            data.drop_sel(time=time[4])
+
+        actual = data.drop_sel(time=time[[1, 4]], errors="ignore")
+        expected = data.isel(time=[0, 3, 4])
+        assert_identical(expected, actual)
+
     def test_drop_indexes(self) -> None:
         ds = Dataset(
             coords={
