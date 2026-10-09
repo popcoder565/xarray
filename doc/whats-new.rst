@@ -123,6 +123,10 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- Unary operations not supported for the dtype of dask arrays, e.g. ``~`` on
+  floats, now raise a ``TypeError`` like for numpy arrays, instead of a
+  ``ValueError`` about mismatched dimensions (:issue:`6427`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation

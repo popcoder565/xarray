@@ -2546,7 +2546,13 @@ class Variable(
         if keep_attrs is None:
             keep_attrs = _get_keep_attrs(default=True)
         with np.errstate(all="ignore"):
-            result = self.__array_wrap__(f(self.data, *args, **kwargs))
+            data = f(self.data, *args, **kwargs)
+            if data is NotImplemented:
+                # e.g. dask returns NotImplemented if f fails for the dtype
+                raise TypeError(
+                    f"{f.__name__!r} is not supported for data of dtype {self.dtype}"
+                )
+            result = self.__array_wrap__(data)
             if keep_attrs:
                 result.attrs = self.attrs
             return result

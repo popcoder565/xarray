@@ -1963,3 +1963,16 @@ def test_conjugate():
     assert dask.is_dask_collection(conj_data)
 
     assert_equal(conj_data, data.conj())
+
+
+def test_unary_op_not_supported_for_dtype():
+    # GH6427: dask returns NotImplemented instead of raising
+    var = Variable("x", da.from_array([1.0]))
+    objs: list[Variable | DataArray | Dataset] = [
+        var,
+        DataArray(var),
+        Dataset({"a": var}),
+    ]
+    for obj in objs:
+        with pytest.raises(TypeError, match=r"'invert' is not supported"):
+            operator.invert(obj)

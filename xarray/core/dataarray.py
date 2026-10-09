@@ -5022,7 +5022,13 @@ class DataArray(
                 "ignore", r"Mean of empty slice", category=RuntimeWarning
             )
             with np.errstate(all="ignore"):
-                da = self.__array_wrap__(f(self.variable.data, *args, **kwargs))
+                data = f(self.variable.data, *args, **kwargs)
+                if data is NotImplemented:
+                    # e.g. dask returns NotImplemented if f fails for the dtype
+                    raise TypeError(
+                        f"{f.__name__!r} is not supported for data of dtype {self.dtype}"
+                    )
+                da = self.__array_wrap__(data)
             if keep_attrs:
                 da.attrs = self.attrs
             return da
