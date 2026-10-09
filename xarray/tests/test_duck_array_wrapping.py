@@ -183,6 +183,14 @@ class TestTopLevelMethods(_BaseTest):
         result = xr.apply_ufunc(func, self.x1, dask="parallelized")
         assert isinstance(result.data, self.Array)
 
+    def test_apply_ufunc_core_dims(self):
+        # GH9933
+        func = lambda x: x.sum(axis=-1)
+        result = xr.apply_ufunc(
+            func, self.x1, input_core_dims=[["y"]], dask="parallelized"
+        )
+        assert isinstance(result.data, self.Array)
+
     def test_align(self):
         result = xr.align(self.x1, self.x2)
         assert isinstance(result[0].data, self.Array)

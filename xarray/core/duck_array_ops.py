@@ -477,9 +477,14 @@ def ravel(array):
     return reshape(array, (-1,))
 
 
-def transpose(array, axes=None):
+def permute_dims(array, axes):
     xp = get_array_namespace(array)
-    return xp.transpose(array, axes)
+    # `permute_dims` is the array API name, but fall back to `transpose` for
+    # numpy<2 and cupy<14
+    if hasattr(xp, "permute_dims"):
+        return xp.permute_dims(array, axes)
+    else:
+        return xp.transpose(array, axes)
 
 
 def moveaxis(array, source, destination):

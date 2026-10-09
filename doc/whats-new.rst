@@ -105,6 +105,11 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- Fix ``AttributeError: module 'sparse' has no attribute 'transpose'`` in
+  :py:func:`apply_ufunc` and functions using it, like :py:func:`where` and
+  :py:func:`dot`, when the dimensions of a ``sparse`` array had to be reordered.
+  This regression was introduced in :pull:`9798` (:issue:`9933`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation
