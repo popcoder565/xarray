@@ -1417,6 +1417,18 @@ def test_concat_merge_single_non_dim_coord() -> None:
         concat([da1, da2, da3], dim="x", coords="different", compat="equals")
 
 
+def test_concat_different_after_single_non_dim_coord() -> None:
+    # GH7763: a coordinate present in only one dataset must not skip the check of
+    # the coordinates after it
+    ds1 = Dataset({"a": ("x", [1])}, coords={"y": 0, "z": 1})
+    ds2 = Dataset({"a": ("x", [2])}, coords={"z": 2})
+
+    actual = concat([ds1, ds2], dim="x", coords="different", compat="equals")
+
+    expected = Dataset({"a": ("x", [1, 2])}, coords={"y": 0, "z": ("x", [1, 2])})
+    assert_identical(actual, expected)
+
+
 def test_concat_preserve_coordinate_order() -> None:
     x = np.arange(0, 5)
     y = np.arange(0, 10)

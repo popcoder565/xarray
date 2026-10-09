@@ -459,7 +459,7 @@ def _calc_concat_over(
                         if len(variables) == 1:
                             # coords="different" doesn't make sense when only one object
                             # contains a particular variable.
-                            break
+                            continue
                         elif len(variables) != len(datasets) and opt == "different":
                             raise ValueError(
                                 f"{k!r} not present in all datasets and coords='different'. "

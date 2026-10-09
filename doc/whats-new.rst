@@ -123,6 +123,12 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- Fix :py:func:`concat` with ``coords="different"`` or ``data_vars="different"``
+  not comparing any of the variables after one that is present in only one of
+  the objects. Depending on the order of the variables, this raised a
+  ``MergeError`` instead of concatenating variables that differ
+  (:issue:`7763`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation
