@@ -1173,6 +1173,52 @@ def test_extension_array_result_type_categorical(categorical1, categorical2):
     )
 
 
+@pytest.mark.parametrize(
+    "array1, array2",
+    [
+        pytest.param(
+            pd.Categorical(["a", "b"], ordered=True),
+            pd.Categorical(["a", "c"], ordered=True),
+            id="categories",
+        ),
+        pytest.param(
+            pd.Categorical(["a", "b"]),
+            pd.Categorical(["a", "b"], ordered=True),
+            id="ordered",
+        ),
+        pytest.param(
+            pd.array(pd.period_range("2000-01-01", periods=2, freq="D")),
+            pd.array(pd.period_range("2000-01", periods=2, freq="M")),
+            id="period-freq",
+        ),
+        pytest.param(
+            pd.arrays.IntervalArray.from_breaks([0, 1, 2]),
+            pd.arrays.IntervalArray.from_breaks([0.5, 1.5, 2.5]),
+            id="interval-subtype",
+        ),
+    ],
+)
+def test_extension_array_result_type_differing_dtypes(array1, array2):
+    # GH10247: casting to either dtype would change values
+    actual = np.result_type(PandasExtensionArray(array1), PandasExtensionArray(array2))
+    assert actual == np.dtype(object)
+
+
+def test_extension_array_result_type_ordered_categorical():
+    # GH10247
+    categorical = PandasExtensionArray(pd.Categorical(["a", "b"], ordered=True))
+    assert np.result_type(categorical, categorical) == categorical.dtype
+    assert np.result_type(categorical, "a") == categorical.dtype
+    assert np.result_type(categorical, "c") == np.dtype(object)
+
+
+@pytest.mark.parametrize("ordered", [True, False])
+@pytest.mark.parametrize("scalar", [None, float("nan"), pd.NA, pd.NaT])
+def test_extension_array_result_type_categorical_missing_scalar(ordered, scalar):
+    categorical = PandasExtensionArray(pd.Categorical(["a", "b"], ordered=ordered))
+    assert np.result_type(categorical, scalar) == categorical.dtype
+
+
 def test_extension_array_attr():
     array = pd.Categorical(["cat2", "cat1", "cat2", "cat3", "cat1"])
     wrapped = PandasExtensionArray(array)

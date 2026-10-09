@@ -105,6 +105,16 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- Fix :py:func:`concat` and other operations silently replacing values with
+  ``NaN`` or changing them when combining pandas extension arrays with dtypes
+  of the same kind that differ, e.g. ordered categoricals with different
+  categories or periods with different frequencies, or when filling an ordered
+  categorical with a value that is not one of its categories, e.g. with
+  :py:meth:`DataArray.where`. Like in pandas, the result is now ``object``.
+  This was a regression in version 2025.12.0, which turned an error into
+  silent data loss. In addition, filling an unordered categorical with
+  ``None`` no longer raises (:issue:`10247`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation

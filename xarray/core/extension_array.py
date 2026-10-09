@@ -131,7 +131,7 @@ def __extension_duck_array__result_type(
         for x in extension_arrays_and_dtypes
     ]
     scalars = [
-        x for x in arrays_and_dtypes if is_scalar(x) and x not in {pd.NA, np.nan}
+        x for x in arrays_and_dtypes if is_scalar(x) and not pd.isna(cast("Scalar", x))
     ]
     # other_stuff could include:
     # - arrays such as pd.ABCSeries, np.ndarray, or other array-api duck arrays
@@ -154,7 +154,15 @@ def __extension_duck_array__result_type(
     if not other_stuff and all(
         isinstance(x, type(ea_type := ea_dtypes[0])) for x in ea_dtypes
     ):
-        return ea_type
+        # Dtypes of the same type can still differ, e.g. in their categories, and
+        # casting to the first one would silently change values. Promote to
+        # object instead, like pandas.
+        if all(x == ea_type for x in ea_dtypes) and not (
+            isinstance(ea_type, pd.CategoricalDtype)
+            and any(x not in ea_type.categories for x in scalars)
+        ):
+            return ea_type
+        return np.dtype(object)
     raise ValueError(
         f"Cannot cast values to shared type, found values: {arrays_and_dtypes}"
     )

@@ -183,6 +183,18 @@ def test_concat_extension_array(var) -> None:
     ).all()  # need to wrap in series because pyarrow bool does not support `all`
 
 
+def test_concat_ordered_categoricals_with_different_categories() -> None:
+    # GH10247
+    ds1 = Dataset({"a": ("x", pd.Categorical(["a", "b", "c"], ordered=True))})
+    ds2 = Dataset({"a": ("x", pd.Categorical(["a", "b", "d"], ordered=True))})
+
+    actual = concat([ds1, ds2], dim="x")
+
+    expected = Dataset({"a": ("x", np.array(["a", "b", "c", "a", "b", "d"], object))})
+    assert_identical(actual, expected)
+    assert actual["a"].dtype == np.dtype(object)
+
+
 def test_concat_missing_multiple_consecutive_var() -> None:
     datasets = create_concat_datasets(3, seed=123)
     expected = concat(datasets, dim="day")
