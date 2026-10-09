@@ -105,6 +105,16 @@ Bug Fixes
   This was due to a bug in the reduction method generation introduced in :pull:`11556`
   (:pull:`11686`).
   By `Andrew Scherer <https://github.com/andrew-s28>`_.
+- Fix assigning a :py:class:`DataArray` along a multi-indexed dimension to a
+  :py:class:`Dataset`, e.g. with ``ds["b"] = xr.zeros_like(ds["a"])``,
+  :py:meth:`Dataset.assign` or :py:meth:`Dataset.update`. This emitted a
+  ``FutureWarning`` about deleting a single level of a ``MultiIndex`` and
+  assigned the values by position instead of aligning them on the multi-index,
+  which silently gave wrong values if they were in a different order. A
+  multi-index that conflicts with the dataset's, e.g. with the levels in
+  another order, now raises an ``AlignmentError`` like :py:func:`align`
+  (:issue:`7921`).
+  By `popcoder565 <https://github.com/popcoder565>`_.
 
 
 Documentation

@@ -4889,6 +4889,38 @@ class TestDataset:
         ds["var"] = ds["var"] * 2
         assert np.allclose(ds["var"], [2, 4, 6])
 
+    @pytest.mark.filterwarnings("error:Deleting a single level")
+    def test_setitem_with_multiindex_coords(self) -> None:
+        # GH7921
+        ds = create_test_multiindex().assign(foo=("x", [0, 1, 2, 3]))
+        expected = ds.assign(bar=("x", [0, 2, 4, 6]))
+
+        actual = ds.copy()
+        actual["bar"] = ds["foo"] * 2
+        assert_identical(actual, expected)
+
+        # aligned on the multi-index
+        actual = ds.copy()
+        actual["bar"] = ds["foo"][::-1] * 2
+        assert_identical(actual, expected)
+
+        actual = ds.assign(bar=ds["foo"] * 2)
+        assert_identical(actual, expected)
+
+    @pytest.mark.filterwarnings("ignore:Deleting a single level")
+    def test_setitem_multiindex_coord_from_dataarray(self) -> None:
+        # GH7921: assigning to a coordinate of the DataArray's own multi-index
+        ds = create_test_multiindex()
+
+        actual = ds.copy()
+        actual["x"] = ds["x"]
+        assert_identical(actual, ds)
+
+        with pytest.raises(
+            ValueError, match=r"cannot set or update variable.*corrupt.*index "
+        ):
+            actual["level_1"] = ds["level_1"]
+
     def test_setitem_align_new_indexes(self) -> None:
         ds = Dataset({"foo": ("x", [1, 2, 3])}, {"x": [0, 1, 2]})
         ds["bar"] = DataArray([2, 3, 4], [("x", [1, 2, 3])])

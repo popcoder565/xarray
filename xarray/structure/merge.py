@@ -1205,11 +1205,16 @@ def dataset_update_method(dataset: Dataset, other: CoercibleMapping) -> _MergeRe
         other = dict(other)
         for key, value in other.items():
             if isinstance(value, DataArray):
-                # drop conflicting coordinates
+                # drop conflicting coordinates, but keep dimension coordinates and
+                # the coordinates sharing their index (e.g., multi-index levels),
+                # unless `key` overwrites one of them
+                keep = set(value.dims)
+                for dim in value.dims:
+                    index_coords = value.xindexes.get_all_coords(dim, errors="ignore")
+                    if key not in index_coords:
+                        keep.update(index_coords)
                 coord_names = [
-                    c
-                    for c in value.coords
-                    if c not in value.dims and c in dataset.coords
+                    c for c in value.coords if c not in keep and c in dataset.coords
                 ]
                 if coord_names:
                     value = value.drop_vars(coord_names)
